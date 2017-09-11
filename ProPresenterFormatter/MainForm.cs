@@ -59,9 +59,19 @@ namespace ProPresenterFormatter
                 primitiveDisplay.Rtf = primitiveString;
             }
             var flowDocument = ReadFlowDocumentFromXml(strings) ?? CreateFlowDocumentFromRtf(strings);
-            XElement stringElement = new XElement("NSString", Convert.ToBase64String(Encoding.UTF8.GetBytes(XamlWriter.Save(flowDocument))));
-            stringElement.SetAttributeValue("rvXMLIvarName", "WinFlowData");
-            strings.First().Parent.Add(stringElement);
+            if (!strings.Any(el => el.Attribute("rvXMLIvarName").Value == "WinFlowData"))
+            {
+                XElement stringElement = new XElement("NSString", Convert.ToBase64String(Encoding.UTF8.GetBytes(XamlWriter.Save(flowDocument))));
+                stringElement.SetAttributeValue("rvXMLIvarName", "WinFlowData");
+                strings.First().Parent.Add(stringElement);
+            }
+            // Don't know?
+            if (!strings.Any(el => el.Attribute("rvXMLIvarName").Value == "WinFontData"))
+            {
+                XElement fontData = new XElement("NSString", "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTE2Ij8+PFJWRm9udCB4bWxuczppPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYS1pbnN0YW5jZSIgeG1sbnM9Imh0dHA6Ly9zY2hlbWFzLmRhdGFjb250cmFjdC5vcmcvMjAwNC8wNy9Qcm9QcmVzZW50ZXIuQ29tbW9uIj48S2VybmluZz4wPC9LZXJuaW5nPjxMaW5lU3BhY2luZz4wPC9MaW5lU3BhY2luZz48T3V0bGluZUNvbG9yIHhtbG5zOmQycDE9Imh0dHA6Ly9zY2hlbWFzLmRhdGFjb250cmFjdC5vcmcvMjAwNC8wNy9TeXN0ZW0uV2luZG93cy5NZWRpYSI+PGQycDE6QT4yNTU8L2QycDE6QT48ZDJwMTpCPjA8L2QycDE6Qj48ZDJwMTpHPjA8L2QycDE6Rz48ZDJwMTpSPjA8L2QycDE6Uj48ZDJwMTpTY0E+MTwvZDJwMTpTY0E+PGQycDE6U2NCPjA8L2QycDE6U2NCPjxkMnAxOlNjRz4wPC9kMnAxOlNjRz48ZDJwMTpTY1I+MDwvZDJwMTpTY1I+PC9PdXRsaW5lQ29sb3I+PE91dGxpbmVXaWR0aD4xPC9PdXRsaW5lV2lkdGg+PFZhcmlhbnRzPk5vcm1hbDwvVmFyaWFudHM+PC9SVkZvbnQ+");
+                fontData.SetAttributeValue("rvXMLIvarName", "WinFontData");
+                strings.First().Parent.Add(fontData);
+            }
             advancedDisplay.Child = new FlowDocumentReader() { Document = flowDocument };
         }
 
@@ -77,9 +87,8 @@ namespace ProPresenterFormatter
                 Run run = new Run(line)
                 {
                     FontFamily = new System.Windows.Media.FontFamily("Flama"),
-                    FontStyle = FontStyles.Normal,
-                    FontWeight = (counter % 2 == 0) ? FontWeights.Thin : FontWeights.Regular,
-                    FontStretch = (counter % 2 == 0) ? FontStretches.SemiCondensed : FontStretches.Condensed,
+                    FontWeight = (counter % 2 == 0) ? FontWeights.Thin : FontWeight.FromOpenTypeWeight(650), // Flama has a weird weight
+                    FontStretch = (counter % 2 == 0) ? FontStretches.SemiCondensed : FontStretches.SemiCondensed,
                     FontSize = (counter % 2 == 0) ? 65 : 80,
                     Foreground = System.Windows.Media.Brushes.White
                 };
@@ -117,12 +126,16 @@ namespace ProPresenterFormatter
         private void saveButton_Click(object sender, EventArgs e)
         {
             // walk through every slide to make sure that it's converted
-            
+
+            var temp = currentSlide;
+
             for (currentSlide = 0; currentSlide < _groups.Count; currentSlide++)
             {
                 LoadSlide();
             }
             _loadedFile.Save(filePathText.Text);
+            currentSlide = temp;
+            LoadSlide();
         }
     }
 }
