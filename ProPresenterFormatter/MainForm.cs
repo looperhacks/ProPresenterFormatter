@@ -52,6 +52,8 @@ namespace ProPresenterFormatter
                 .Where(arr => arr.Attribute("rvXMLIvarName").Value == "displayElements")
                 .SelectMany(el => el.Descendants("RVTextElement"))
                 .SelectMany(el => el.Descendants("NSString"));
+            if (strings.Count() == 0)
+                return;
             var primitiveText = strings.Where(str => str.Attribute("rvXMLIvarName").Value == "RTFData").Select(el => el.Value).FirstOrDefault();
             if (primitiveText != null)
             {
@@ -89,7 +91,7 @@ namespace ProPresenterFormatter
                     FontFamily = new System.Windows.Media.FontFamily("Flama"),
                     FontWeight = (counter % 2 == 0) ? FontWeights.Thin : FontWeight.FromOpenTypeWeight(650), // Flama has a weird weight
                     FontStretch = (counter % 2 == 0) ? FontStretches.SemiCondensed : FontStretches.SemiCondensed,
-                    FontSize = (counter % 2 == 0) ? 65 : 80,
+                    FontSize = (counter % 2 == 0) ? 80 : 95,
                     Foreground = System.Windows.Media.Brushes.White
                 };
                 flowDocument.Blocks.Add(new Paragraph(run) { TextAlignment = TextAlignment.Center } );
